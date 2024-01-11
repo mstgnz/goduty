@@ -1,0 +1,48 @@
+version: "3.5"
+
+services:
+  putduty_server:
+    build: ./server
+    container_name: putduty_server
+    ports:
+      - 5000:5000
+    networks:
+      - putduty
+    depends_on:
+      - putduty_mongo
+      - putduty_redis
+
+  putduty_client:
+    build: ./client
+    container_name: putduty_client
+    ports:
+      - 3000:3000
+    networks:
+      - putduty
+    depends_on:
+      - putduty_server
+
+  putduty_mongo:
+    container_name: putduty_mongo
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - putduty-db:/opt/putduty/db
+    networks:
+      - putduty
+
+  putduty_redis:
+    container_name: putduty_redis
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - putduty
+
+networks:
+  putduty:
+
+volumes:
+  putduty-db:

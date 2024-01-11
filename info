@@ -1,0 +1,37 @@
+putduty.com
+
+özet : trello clone ancak görüntülü toplantı ve online chat olacak, çıkış yolu trello idi ancak jira scrum methodu içinde harmanlama yapılabilir.
+notlar:
+    yıllık, aylık ve haftalık planlar olacak; yıllık plan aylık planlardan, aylık plan haftalık planlardan, haftalık plan günlük planlardan oluşacaktır
+    ms project gibi bir yapı olacak hem chart hem de card görünümlü
+    card button ekleme liste bazlı olacak, her listeye özel custom button ve genel button tanımlaması olacak
+    timelineda gözükecek listeler timeline listesine atanmalı olsunki tüm listeler chartta çıkmasın sadece istenenler olsun
+    kartlara atanan kişilerin iş yükünün görülebilmesi için bir timeline olmalı
+    pano ve listeler için kullanıcı bazlı izinler olmalı. oluşturma, okuma, taşıma, silme
+    aynı isimde kartlar olabilir o yüzden kart isimlerinin başında veya uygun bir yerde hangi listede oluşturulduysa o listenin etiketi olsun (def card of abc list)
+    kartlar ve listeler için kurallar tanımlanabilmeli, ör:) trello rules
+
+
+panolar, görevler, üyeler, etiketler, kontrol listesi, yorumlar, ekler
+
+Steps
+
+# Üyelik oluşturma - User
+    - merkezi üyelik olacak
+    - sisteme kaydolan kullanıcı oluşturduğu panolar için email ile davet gönderecek
+    - daveti kabul eden mail için üyelik oluşacaktır. mail var ise ilgili üye için pano bağlantısı yapılacak (members)
+
+# Pano oluşturma
+    - pano ve üyeler arasında bağlantı olacaktır. (root, staff ve user)
+    - root kendi oluşturduğu panolar (birden fazla olabilir)
+    - user davet edildiği panolar (birden fazla olabilir)
+    - root pano için staff yetkisi verebilecek
+
+# Kart oluşturma
+    - label : kart etiketi olacak, birden fazla etiket atanabilir. bu etiketlere göre listeler filtreler olacak
+    - yazma izni olan kullanıcılar listeye card ekleyip silebilecektir.
+    - işlem görmüş kartlar silinmek istendiğinde, karta bağlı kullanıcılara bildirim gidecek ve silme işlemi onaylanırsa silinecektir.
+    - listeden listeye kart taşıma işlemini ise sadece kartı yapan kişi yapabilir.
+    - karlar root kullanıcısı tarafından yazma izni verilenler tarafından oluşturulup silinebilir
+
+
