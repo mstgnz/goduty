@@ -1,0 +1,9 @@
+package page
+
+import "github.com/mstgnz/goduty/view"
+
+templ Home(message string) {
+	@view.Base() {
+		<h1>HOME PAGE { message }</h1>
+	}
+}
