@@ -1,0 +1,32 @@
+package form
+
+type InputProps struct {
+	Id          string
+	Class       string
+	Type        string
+	Name        string
+	Value       string
+	Required    bool
+	PlaceHolder string
+	Data        map[string]string
+}
+
+templ Input(props InputProps) {
+	/* required := ""
+	if props.Required {
+		required = "required"
+	}
+
+	dataAttributes := ""
+	for key, value := range props.Data {
+		dataAttributes += fmt.Sprintf("data-%s=\"%s\"",key,value)
+	} */
+	<input
+		type={ props.Type }
+		id={ props.Id }
+		class={ props.Class }
+		name={ props.Name }
+		value={ props.Value }
+		placeholder={ props.PlaceHolder }
+	/>
+}
