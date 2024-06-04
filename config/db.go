@@ -1,19 +1,20 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	_ "github.com/lib/pq"
 )
 
-// OpenDatabase is creating a new connection to our database
-func OpenDatabase() *gorm.DB {
+type DB struct {
+	*sql.DB
+}
 
+// ConnectDatabase is creating a new connection to our database
+func (db *DB) ConnectDatabase() {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
@@ -21,43 +22,23 @@ func OpenDatabase() *gorm.DB {
 	dbName := os.Getenv("DB_NAME")
 	dbZone := os.Getenv("DB_ZONE")
 
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=%s", dbHost, dbPort, dbUser, dbPass, dbName, dbZone)
-	db, _ := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	/* if err != nil {
-		panic("Failed to create a connection to database")
-	} */
-	log.Printf("DB Connected")
-	//_ = db.AutoMigrate(&entity.Blog{}, &entity.Comment{})
-	return db
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=%s", dbHost, dbPort, dbUser, dbPass, dbName, dbZone)
+	database, err := sql.Open("postgres", connStr)
+	if err != nil {
+		panic("Failed DB Connection")
+	}
+	if err = database.Ping(); err != nil {
+		panic("Failed DB Ping")
+	}
+	log.Println("DB Connected")
+	db.DB = database
 }
 
 // CloseDatabase method is closing a connection between your app and your db
-func CloseDatabase(db *gorm.DB) {
-	dbSQL, _ := db.DB()
-	/* if err != nil {
-		panic("Failed to close connection from database")
-	} */
-	_ = dbSQL.Close()
-}
-
-// Paginate if need pagination use this scope
-func Paginate(r *http.Request) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		q := r.URL.Query()
-		page, _ := strconv.Atoi(q.Get("page"))
-		if page <= 0 {
-			page = 1
-		}
-
-		pageSize, _ := strconv.Atoi(q.Get("page_size"))
-		switch {
-		case pageSize > 100:
-			pageSize = 100
-		case pageSize <= 0:
-			pageSize = 10
-		}
-
-		offset := (page - 1) * pageSize
-		return db.Offset(offset).Limit(pageSize)
+func (db *DB) CloseDatabase() {
+	if err := db.DB.Close(); err != nil {
+		log.Println("Failed to close connection from the database:", err.Error())
+	} else {
+		log.Println("DB Connection Closed")
 	}
 }

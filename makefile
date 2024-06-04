@@ -6,39 +6,39 @@ include .env
 
 # Build the Docker image and run the container
 run: cleanC generate build
-	docker run -d --name $(PROJECT_NAME) -p $(PORT):$(PORT) --env-file .env $(PROJECT_NAME)
+	docker run -d --name $(APP_NAME) -p $(PORT):$(PORT) --env-file .env $(APP_NAME)
 
 live: generate
-#	find . -type f \( -name '*.go' -o -name '*.templ' \) | entr -r sh -c 'make && docker logs --follow $(PROJECT_NAME)'
+#	find . -type f \( -name '*.go' -o -name '*.templ' \) | entr -r sh -c 'make && docker logs --follow $(APP_NAME)'
 	find . -type f \( -name '*.go' -o -name '*.templ' \) | entr -r sh -c 'go build -o /tmp/build ./cmd && /tmp/build'
 
 # Build the Docker image
 build:
-	docker build -t $(PROJECT_NAME) .
+	docker build -t $(APP_NAME) .
 
 # Stop and remove the Docker container
 # --time=600 for waiting running job
 stop:
-	docker stop --time=600 $(PROJECT_NAME)
-	docker rm $(PROJECT_NAME)
+	docker stop --time=600 $(APP_NAME)
+	docker rm $(APP_NAME)
 
 # Run the application inside the Docker container
 exec:
-	docker exec -it $(PROJECT_NAME) bash
+	docker exec -it $(APP_NAME) bash
 
 # Clean up the Docker image
 cleanI:
-	docker rmi $(PROJECT_NAME)
-	docker builder prune --filter="image=$(PROJECT_NAME)"
+	docker rmi $(APP_NAME)
+	docker builder prune --filter="image=$(APP_NAME)"
 
 cleanC:
-	@CONTAINER_EXISTS=$$(docker ps -aq --filter name=$(PROJECT_NAME)); \
+	@CONTAINER_EXISTS=$$(docker ps -aq --filter name=$(APP_NAME)); \
 	if [ -n "$$CONTAINER_EXISTS" ]; then \
-		echo "Stopping and removing container $(PROJECT_NAME)"; \
-		docker stop $(PROJECT_NAME); \
-		docker rm $(PROJECT_NAME); \
+		echo "Stopping and removing container $(APP_NAME)"; \
+		docker stop $(APP_NAME); \
+		docker rm $(APP_NAME); \
 	else \
-		echo "No such container: $(PROJECT_NAME)"; \
+		echo "No such container: $(APP_NAME)"; \
 	fi
 
 test: 

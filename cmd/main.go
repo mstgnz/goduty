@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -15,19 +18,28 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"github.com/mstgnz/goduty/config"
-	"github.com/mstgnz/goduty/handler"
+	"github.com/mstgnz/goduty/handlers"
 )
 
-var PORT string
-
 var (
-	db = config.OpenDatabase()
+	PORT        string
+	homeHandler handlers.HomeHandler
 )
 
 func init() {
 	// Load Env
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Load Env Error: %v", err)
+	}
+	// init conf
+	_ = config.App()
+
+	// Load Sql
+	config.App().QUERY = make(map[string]string)
+	if query, err := config.LoadSQLQueries(); err != nil {
+		log.Fatalf("Load Sql Error: %v", err)
+	} else {
+		config.App().QUERY = query
 	}
 
 	PORT = os.Getenv("PORT")
@@ -44,7 +56,7 @@ func Catch(h HttpHandler) http.HandlerFunc {
 }
 
 func main() {
-	defer config.CloseDatabase(db)
+	defer config.App().DB.CloseDatabase()
 
 	r := chi.NewRouter()
 
@@ -67,21 +79,34 @@ func main() {
 	fileServer(r, "/asset", http.Dir(filepath.Join(workDir, "asset")))
 
 	// web without auth
-	homeHandler := handler.HomeHandler{}
 	r.Get("/", Catch(homeHandler.Index))
 
 	// web with auth
 	r.Group(func(r chi.Router) {
 		r.Use(webAuthMiddleware)
-		//r.Get("/", Catch(webHandler.HomeHandler))
-		//r.Get("/profile", Catch(webHandler.ProfileHandler))
-		//r.Get("/schedules", Catch(webHandler.ListHandler))
+		//r.Get("/", Catch(homeHandler.Index))
+		//r.Get("/profile", Catch(homeHandler.ProfileHandler))
+		//r.Get("/schedules", Catch(homeHandler.ListHandler))
 	})
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", PORT), r)
-	if err != nil && err != http.ErrServerClosed {
-		log.Fatal(err.Error())
-	}
+	// Create a context that listens for interrupt and terminate signals
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+	defer stop()
+
+	// Run your HTTP server in a goroutine
+	go func() {
+		err := http.ListenAndServe(fmt.Sprintf(":%s", PORT), r)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err.Error())
+		}
+	}()
+
+	log.Printf("Goduty is running on %s", PORT)
+
+	// Block until a signal is received
+	<-ctx.Done()
+
+	log.Println("Shutting down gracefully...")
 }
 
 func webAuthMiddleware(next http.Handler) http.Handler {
@@ -105,7 +130,12 @@ func webAuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		user := &models.User{}
-		getUser := user.GetUserWithId(user_id)
+		getUser, err := user.GetUserWithId(user_id)
+
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 
 		ctx := context.WithValue(r.Context(), config.CKey("user"), getUser)
 		next.ServeHTTP(w, r.WithContext(ctx)) */

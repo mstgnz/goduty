@@ -7,9 +7,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func Validate(structure interface{}) error {
-	var validate *validator.Validate
-	validate = validator.New()
+func Validate(structure any) error {
+	validate := validator.New()
 	var errStr string
 	var errSlc []error
 	// returns nil or ValidationErrors ( []FieldError )
@@ -20,7 +19,7 @@ func Validate(structure interface{}) error {
 		// value most including myself do not usually have code like this.
 		var invalidValidationError *validator.InvalidValidationError
 		if errors.As(err, &invalidValidationError) {
-			errStr = err.Error()
+			return err
 		}
 		for _, err := range err.(validator.ValidationErrors) {
 			errStr = fmt.Sprintf("%s %s %s %s", err.Tag(), err.Param(), err.Field(), err.Type().String())
