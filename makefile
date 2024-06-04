@@ -1,7 +1,7 @@
 include .env
 
 # Makefile for building and running the Docker image and container
-.PHONY: run live build stop cleanI cleanC exec test generate
+.PHONY: run live build db stop cleanI cleanC exec test generate
 .DEFAULT_GOAL:= run
 
 # Build the Docker image and run the container
@@ -15,6 +15,16 @@ live: generate
 # Build the Docker image
 build:
 	docker build -t $(APP_NAME) .
+
+# Postgres
+db:
+	docker volume create $(APP_NAME)-postgres
+	docker run --name $(APP_NAME)-postgres \
+		-p $(DB_PORT):5432  \
+		-e POSTGRES_DB=$(DB_NAME) \
+		-e POSTGRES_PASSWORD=$(DB_PASS) \
+		-v $(APP_NAME)-postgres:/var/lib/postgresql/data -d \
+		postgres
 
 # Stop and remove the Docker container
 # --time=600 for waiting running job

@@ -12,7 +12,6 @@ import (
 
 var (
 	once     sync.Once
-	mu       sync.Mutex
 	instance *config
 )
 
@@ -48,24 +47,6 @@ func App() *config {
 		instance.DB.ConnectDatabase()
 	})
 	return instance
-}
-
-func ShuttingWrapper(fn func()) {
-	if !App().Shutting {
-		fn()
-	}
-}
-
-func IncrementRunning() {
-	mu.Lock()
-	App().Running++
-	mu.Unlock()
-}
-
-func DecrementRunning() {
-	mu.Lock()
-	App().Running--
-	mu.Unlock()
 }
 
 func Logger(fileName string, logger *log.Logger) {
