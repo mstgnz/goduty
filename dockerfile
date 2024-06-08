@@ -9,6 +9,7 @@ RUN GOOS=linux CGO_ENABLED=0 go build -o goduty ./cmd
 FROM alpine:latest
 RUN apk update && apk add --no-cache ffmpeg
 WORKDIR /app
+COPY . .
 COPY --from=builder /app/ /app/
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 ENV TZ=Europe/Istanbul
